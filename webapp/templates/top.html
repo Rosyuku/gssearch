@@ -1,0 +1,127 @@
+<!doctype html>
+{% block content %}
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>{{ title }}</title>
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
+<link href="/static/css/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<header>
+    <script>
+        function show(){
+                var target = document.getElementById("hidden_box")
+                target.style.display = "inline"
+                var target = document.getElementById("form-inline")
+                target.style.display = "none"
+                var target = document.getElementById("form-inline2")
+                target.style.display = "none"
+                }
+    </script>
+    <style>
+        .hidden_box{
+                display:none
+                }
+    </style>
+</header>
+
+<div class="hidden_box" id="hidden_box" name="hidden_box">
+    <p>Wait a minute</p>
+    <img src={{"/static/loading_spinner.gif"}} alt="pic01">
+</div>    
+
+<form action="/top" method="post" class="form-inline" id="form-inline">
+    <p><font size="6" color="black">Search condition</font></p>
+    <p>Query
+        {% if query %}
+            <input name="query" value={{ query }} size="30" style="text-align: left;"></input>
+        {% else %}
+            <input name="query" value="" size="30" style="text-align: left;"></input>
+        {% endif %}        
+    </p>
+    <p>Language
+        {% if lr %}
+            <input name="lr" value={{ lr }} size="10" style="text-align: left;"></input>
+        {% else %}
+            <input name="lr" value="lang_en" size="10" style="text-align: left;"></input>
+        {% endif %}        
+    </p>       
+    <p>as_ylo
+        {% if as_ylo %}
+            <input name="as_ylo" value={{ as_ylo }} size="4" style="text-align: right;"></input>
+        {% else %}
+            <input name="as_ylo" value="" size="4" style="text-align: right;"></input>
+        {% endif %}        
+    </p>   
+    <p>as_yhi
+        {% if as_yhi %}
+            <input name="as_yhi" value={{ as_yhi }} size="4" style="text-align: right;"></input>
+        {% else %}
+            <input name="as_yhi" value="" size="4" style="text-align: right;"></input>
+        {% endif %}        
+    </p>  
+    <p>scisbd
+        {% if as_yhi %}
+            <input name="scisbd" value={{ scisbd }} size="2" style="text-align: right;"></input>
+        {% else %}
+            <input name="scisbd" value="0" size="2" style="text-align: right;"></input>
+        {% endif %}        
+    </p>  
+    <p>as_vis
+        {% if as_vis %}
+            <input name="as_vis" value={{ as_vis }} size="2" style="text-align: right;"></input>
+        {% else %}
+            <input name="as_vis" value="1" size="2" style="text-align: right;"></input>
+        {% endif %}        
+    </p>  
+    <p>as_sdt
+        {% if as_sdt %}
+            <input name="as_sdt" value={{ as_sdt }} size="2" style="text-align: right;"></input>
+        {% else %}
+            <input name="as_sdt" value="1" size="2" style="text-align: right;"></input>
+        {% endif %}        
+    </p>  
+    <p>num
+        {% if num %}
+            <input name="num" value={{ num }} size="2" style="text-align: right;"></input>
+        {% else %}
+            <input name="num" value="100" size="3" style="text-align: right;"></input>
+        {% endif %}        
+    </p>             
+    <p><input type="submit" class="btn" value="Search condition" name="listview" id="listview" onClick="show()"></p>
+</form>
+
+{% if message %}
+    <br>
+    <p><font size="6" color="black">Search results</font></p>
+    <p><font size="4" color="red">{{ message }}</font></p>
+{% endif %}
+
+<p class="lead">
+  {% if dfflag%}
+      <form action="/top" method="post" class="form-inline" id="form-inline2">
+        <table class="table2" border=1>
+            <tr>
+            {% for col in df_columns %}
+                <th align="center">{{col}}</th>
+            {% endfor %}
+            </tr>
+            {% for row in range(df.shape[0]) %}
+                <tr>
+                {% for col in range(df.shape[1]) %}
+                    {% if df[row, col].__class__ == float %}
+                        <td align="center">{{ '{:.1f}'.format(df[row, col])}}</td>
+                    {% else %}
+                        <td align="center">{{(df[row, col])}}</td>
+                    {% endif %}
+                {% endfor %}
+                </tr>
+            {% endfor %}            
+        </table>
+      </form>
+  {% endif %}
+</p>        
+{% endblock %}
+</body>

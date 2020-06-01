@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 24 12:09:31 2019
+
+@author: m162109
+"""
+
+# Flask などの必要なライブラリをインポートする
+from flask import Flask, render_template, request, redirect, url_for, make_response
+from werkzeug.utils import secure_filename
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import google_scholar_search
+from gvalue import Gvalue
+
+class settings:
+    pass
+    
+# 自身の名称を app という名前でインスタンス化する
+app = Flask(__name__)
+app.config.from_object(settings)
+gvalue = Gvalue(app)
+
+# / にアクセスしたときの処理
+@app.route('/')
+def root():
+    return redirect(url_for('top'))
+
+# top にアクセスしたときの処理
+@app.route('/top', methods=['GET', 'POST'])
+def top():
+    title = "トップページ"
+    
+    if request.method == 'POST':
+
+        query = request.form['query']
+        lr = request.form['lr']
+        as_ylo = request.form['as_ylo']
+        as_yhi = request.form['as_yhi']
+        scisbd = request.form['scisbd']
+        as_vis = request.form['as_vis']
+        as_sdt = request.form['as_sdt']
+        num = request.form['num']
+        
+        df_result = google_scholar_search.get_summary(query, lr=lr, as_ylo=as_ylo)
+        message = 'Search success'
+        
+        return render_template('top.html', 
+                               title=title,
+                               query=query,
+                               lr=lr,
+                               as_ylo=as_ylo,
+                               as_yhi=as_yhi,
+                               scisbd=scisbd,
+                               as_vis=as_vis,
+                               as_sdt=as_sdt,
+                               num=num,
+                               dfflag=True,
+                               df_index=df_result.index.tolist(),
+                               df_columns=df_result.columns.tolist(),
+                               df=df_result.values,
+                               message=message,
+                               )
+
+        
+    else:
+        return render_template('top.html',
+                               title=title,
+                               )
+
+if __name__ == '__main__':
+    app.debug = True # デバッグモード有効化
+    app.run(host='0.0.0.0', port=8080, threaded=True) # どこからでもアクセス可能に
