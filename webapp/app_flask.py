@@ -31,7 +31,7 @@ def root():
 # top にアクセスしたときの処理
 @app.route('/top', methods=['GET', 'POST'])
 def top():
-    title = "トップページ"
+    title = "Google Scholar Search"
     
     if request.method == 'POST':
 
@@ -43,8 +43,11 @@ def top():
         as_vis = request.form['as_vis']
         as_sdt = request.form['as_sdt']
         num = request.form['num']
+
+        print('query:{}, lr:{}, as_ylo:{}, as_yhi:{}, scisbd:{}, as_vis:{}, as_sdt:{}, num:{}'.format(query, lr, as_ylo, as_yhi, scisbd, as_vis, as_sdt, num))
         
-        df_result = google_scholar_search.get_summary(query, lr=lr, as_ylo=as_ylo)
+        df_result = google_scholar_search.get_summary(query, lr=lr, as_ylo=as_ylo).sort_values('citations', ascending=False)
+        print(df_result.head())
         message = 'Search success'
         
         return render_template('top.html', 
@@ -72,4 +75,4 @@ def top():
 
 if __name__ == '__main__':
     app.debug = True # デバッグモード有効化
-    app.run(host='0.0.0.0', port=8080, threaded=True) # どこからでもアクセス可能に
+    app.run(host='0.0.0.0', port=8000, threaded=True) # どこからでもアクセス可能に

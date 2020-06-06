@@ -45,6 +45,7 @@ def get_summary(q,
     params["as_sdt"] = as_sdt
     params["hl"] = "ja"
     params["num"] = min(100, num)
+    params["btnG"] = 1
 
     columns = ["rank", "title", "abust", "writer", "year", "citations", "url"]
     df = pd.DataFrame(columns=columns) #表の作成
@@ -52,7 +53,8 @@ def get_summary(q,
     url_base  = "https://scholar.google.co.jp/scholar?"
     url_get = "q=" + "+".join(params["q"].split(" "))
     for key in params.keys():
-        url_get += '&' + key + '=' + str(params[key])  
+        if params[key] is not '':
+            url_get += '&' + key + '=' + str(params[key])  
     url = url_base + url_get
 
     for start in range(0, params["num"], 20):
@@ -84,7 +86,7 @@ def get_summary(q,
 
 if __name__ == "__main__":
 
-    q = "machine learning"
+    q = "machine learning_trial"
     lr = "lang_en|lang_ja"
     as_ylo = 2018
     
