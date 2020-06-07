@@ -146,7 +146,7 @@
                     {% if df[row, col].__class__ == float %}
                     <td align="center">{{ '{:.1f}'.format(df[row, col])}}</td>
                     {% elif df_columns[col] == "url" %}
-                    <td align="center"><a href= {{ df[row, col] }} > {{ df[row, col][:20]) }} </a></td>
+                    <td align="center"><a href= {{ df[row, col] }} > {{ df[row, col][:20] }} </a></td>
                     {% else %}
                     <td align="center">{{(df[row, col])}}</td>
                     {% endif %}
