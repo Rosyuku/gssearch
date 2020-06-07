@@ -98,14 +98,19 @@ def get_summary(q,
             writer = re.sub(r'\d', '', writer)
             year = tag2.text
             year = re.sub(r'\D', '', year)[-4:]
+            if year == '':
+                year = 0
             citations = tag3.replace("引用元","")
+            if citations == '':
+                citations = 0
             abust = tag4.text
             se = pd.Series([rank, title, abust, writer, int(year), int(citations), aurl], columns)
             df = df.append(se, columns)
             rank += 1
         
         session.close()
-        time.sleep(random.uniform(1,5))
+        if start + 20 < params["num"]:
+            time.sleep(random.uniform(1,5))
             
     return df
 
