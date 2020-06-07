@@ -6,11 +6,11 @@ Created on Tue Sep 24 12:09:31 2019
 """
 
 # Flask などの必要なライブラリをインポートする
-from flask import Flask, render_template, request, redirect, url_for, make_response
-from werkzeug.utils import secure_filename
-
 import os
 import sys
+from flask import Flask, render_template, request, redirect, url_for
+#from werkzeug.utils import secure_filename
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import google_scholar_search
 from gvalue import Gvalue
@@ -74,5 +74,5 @@ def top():
                                )
 
 if __name__ == '__main__':
-    app.debug = True # デバッグモード有効化
-    app.run(host='0.0.0.0', port=8000, threaded=True) # どこからでもアクセス可能に
+    app.debug = False # デバッグモード有効化
+    app.run(host='0.0.0.0', port=8080, threaded=False) # どこからでもアクセス可能に

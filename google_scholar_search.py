@@ -8,12 +8,17 @@ Created on Sun May 31 00:23:02 2020
 https://own-search-and-study.xyz/2019/06/09/python-scraping-icml2019-summary/
 https://serpapi.com/google-scholar-api
 https://qiita.com/kuto/items/9730037c282da45c1d2b
+https://github.com/scholarly-python-package/scholarly
 """
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
+from fake_useragent import UserAgent
+import random
+import hashlib
+import time
 
 def get_summary(q, 
                lr="",
@@ -45,7 +50,12 @@ def get_summary(q,
     params["as_sdt"] = as_sdt
     params["hl"] = "ja"
     params["num"] = min(100, num)
-    params["btnG"] = 1
+#    params["btnG"] = 1
+
+    _HEADERS = {
+        'accept-language': 'ja',
+        'accept': 'text/html,application/xhtml+xml,application/xml'
+    }
 
     columns = ["rank", "title", "abust", "writer", "year", "citations", "url"]
     df = pd.DataFrame(columns=columns) #表の作成
@@ -53,14 +63,26 @@ def get_summary(q,
     url_base  = "https://scholar.google.co.jp/scholar?"
     url_get = "q=" + "+".join(params["q"].split(" "))
     for key in params.keys():
+        if key == "q":
+            continue
         if params[key] is not '':
             url_get += '&' + key + '=' + str(params[key])  
     url = url_base + url_get
 
     for start in range(0, params["num"], 20):
+
+        _HEADERS['User-Agent'] = UserAgent().random
+        _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
+        _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
         
         session = requests.session()
-        response = session.get(url + '&start=' + str(start))
+        url = url + '&start=' + str(start)
+        response = session.get(url,
+                               headers=_HEADERS,
+                               cookies=_COOKIES,
+                               timeout=10,
+                               )
+        response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, "html.parser")
         
         tags1 = soup.find_all("h3", {"class": "gs_rt"})  # title&url
@@ -81,15 +103,17 @@ def get_summary(q,
             se = pd.Series([rank, title, abust, writer, int(year), int(citations), aurl], columns)
             df = df.append(se, columns)
             rank += 1
+        
+        session.close()
+        time.sleep(random.uniform(1,5))
             
     return df
 
 if __name__ == "__main__":
 
-    q = "machine learning_trial"
+    q = "machine learning"
     lr = "lang_en|lang_ja"
     as_ylo = 2018
     
     df = get_summary(q, lr=lr, as_ylo=as_ylo)
     
-
