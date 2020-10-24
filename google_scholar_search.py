@@ -112,7 +112,7 @@ def get_summary(q,
         if start + 20 < params["num"]:
             time.sleep(random.uniform(1,5))
             
-    return df
+    return df, response.text
 
 if __name__ == "__main__":
 

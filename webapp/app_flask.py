@@ -47,7 +47,7 @@ def top():
 
         print('query:{}, lr:{}, as_ylo:{}, as_yhi:{}, scisbd:{}, as_vis:{}, as_sdt:{}, num:{}'.format(query, lr, as_ylo, as_yhi, scisbd, as_vis, as_sdt, num))
         
-        df_result = google_scholar_search.get_summary(query, 
+        df_result, response_text = google_scholar_search.get_summary(query, 
                                                       lr=lr, 
                                                       as_ylo=as_ylo,
                                                       as_yhi=as_yhi,
@@ -55,9 +55,13 @@ def top():
                                                       as_vis=as_vis,
                                                       as_sdt=as_sdt,
                                                       num=int(num),
-                                                      ).sort_values('citations', ascending=False)
+                                                      )
+        df_result = df_result.sort_values('citations', ascending=False)
         print(df_result.head())
-        message = 'Search success'
+        if df_result.shape[0] > 0:
+            message = 'Search success'
+        else:
+            message = response_text
         
         print(query)
         
