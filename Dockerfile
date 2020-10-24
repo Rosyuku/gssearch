@@ -3,12 +3,14 @@ LABEL maintainer="Kazuyuki Wakasugi"
 LABEL version="0.1.0"
 
 #リポジトリをclone
-RUN git clone https://github.com/Rosyuku/gssearch.git --depth 1 && \
-    pip install -r ./gssearch/requirements.txt
+COPY ./requirements.txt ./requirements.txt
+RUN pip install -r ./requirements.txt
+COPY ./google_scholar_search.py ./google_scholar_search.py
+COPY ./webapp/ ./webapp/
 
 #CLOUD RUN用の設定
 ENV PORT 8080
 EXPOSE 8080
 
 #実行コマンドを指定
-CMD ["python", "./gssearch/webapp/app_flask.py"]
+CMD ["python", "./webapp/app_flask.py"]
