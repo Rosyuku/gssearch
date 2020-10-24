@@ -71,7 +71,7 @@ def get_summary(q,
 
     for start in range(0, params["num"], 20):
 
-        _HEADERS['User-Agent'] = UserAgent(verify_ssl=False).random
+        _HEADERS['User-Agent'] = UserAgent(verify_ssl=False, use_cache_server=False,).random
         _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
         _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
         
