@@ -11,15 +11,19 @@ https://qiita.com/kuto/items/9730037c282da45c1d2b
 https://github.com/scholarly-python-package/scholarly
 """
 
+import hashlib
+import random
+import re
+import subprocess
+import time
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import re
 from fake_useragent import UserAgent
-import random
-import hashlib
-import time
-import subprocess
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 
 def get_summary(q, 
                lr="",
@@ -81,6 +85,9 @@ def get_summary(q,
                 'http': proxy,
                 'https': proxy
                 }
+        retries = Retry(total=5,  # リトライ回数
+                backoff_factor=1,  # sleep時間
+                status_forcelist=[500, 502, 503, 504])  # timeout以外でリトライするステータスコード
 
         if (usetor is True) & (proxy == "socks5://127.0.0.1:9050"):
             args = ['killall', 'tor']
@@ -89,42 +96,47 @@ def get_summary(q,
             subprocess.call(args)
         
         session = requests.session()
-        url = url + '&start=' + str(start)
-        response = session.get(url,
-                                headers=_HEADERS,
-                                cookies=_COOKIES,
-                                timeout=10,
-                                proxies=_PROXIES,
-                                )
-        response.encoding = response.apparent_encoding
-        soup = BeautifulSoup(response.text, "html.parser")
+        session.mount("https://", HTTPAdapter(max_retries=retries))
+
+        try:
+            response = session.get(url+'&start='+str(start),
+                                    headers=_HEADERS,
+                                    cookies=_COOKIES,
+                                    timeout=10,
+                                    proxies=_PROXIES,
+                                    )
+            response.encoding = response.apparent_encoding
+            soup = BeautifulSoup(response.text, "html.parser")
+            
+            tags1 = soup.find_all("h3", {"class": "gs_rt"})  # title&url
+            tags2 = soup.find_all("div", {"class": "gs_a"})  # writer&year
+            tags3 = soup.find_all(text=re.compile("引用元"))  # citation
+            tags4 = soup.find_all("div", {"class": "gs_rs"})
         
-        tags1 = soup.find_all("h3", {"class": "gs_rt"})  # title&url
-        tags2 = soup.find_all("div", {"class": "gs_a"})  # writer&year
-        tags3 = soup.find_all(text=re.compile("引用元"))  # citation
-        tags4 = soup.find_all("div", {"class": "gs_rs"})
-    
-        rank = start + 1
-        for tag1, tag2, tag3, tag4 in zip(tags1, tags2, tags3, tags4):
-            title = tag1.text.replace("[HTML]","")
-            aurl = tag1.select("a")[0].get("href")
-            writer = tag2.text
-            writer = re.sub(r'\d', '', writer)
-            year = tag2.text
-            year = re.sub(r'\D', '', year)[-4:]
-            if year == '':
-                year = 0
-            citations = tag3.replace("引用元","")
-            if citations == '':
-                citations = 0
-            abust = tag4.text
-            se = pd.Series([rank, title, abust, writer, int(year), int(citations), aurl], columns)
-            df = df.append(se, columns)
-            rank += 1
+            rank = start + 1
+            for tag1, tag2, tag3, tag4 in zip(tags1, tags2, tags3, tags4):
+                title = tag1.text.replace("[HTML]","")
+                aurl = tag1.select("a")[0].get("href")
+                writer = tag2.text
+                writer = re.sub(r'\d', '', writer)
+                year = tag2.text
+                year = re.sub(r'\D', '', year)[-4:]
+                if year == '':
+                    year = 0
+                citations = tag3.replace("引用元","")
+                if citations == '':
+                    citations = 0
+                abust = tag4.text
+                se = pd.Series([rank, title, abust, writer, int(year), int(citations), aurl], columns)
+                df = df.append(se, columns)
+                rank += 1
         
-        session.close()
-        if start + 20 < params["num"]:
-            time.sleep(random.uniform(1,5))
+            session.close()
+            if start + 20 < params["num"]:
+                time.sleep(random.uniform(1,5))
+
+        except:
+            continue
             
     return df, response.text
 
@@ -135,4 +147,3 @@ if __name__ == "__main__":
     as_ylo = 2018
     
     df, text = get_summary(q, lr=lr, as_ylo=as_ylo)
-    
