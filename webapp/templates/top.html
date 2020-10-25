@@ -114,6 +114,14 @@
                     <input class="param_input" name="num" value="100" size="3" style="text-align: right;"></input>
                     {% endif %}
                 </div>
+                <div class="param">
+                    proxy
+                    {% if proxy %}
+                    <input class="param_input" name="proxy" value={{ proxy }} size="30" style="text-align: left;"></input>
+                    {% else %}
+                    <input class="param_input" name="proxy" value="" size="30" style="text-align: left;"></input>
+                    {% endif %}
+                </div>
             </div>
             <p>
                 <input type="submit" class="btn" value="Execute search" name="listview" id="listview" onClick="show()">

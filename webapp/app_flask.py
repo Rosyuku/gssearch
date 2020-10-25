@@ -8,9 +8,12 @@ Created on Tue Sep 24 12:09:31 2019
 # Flask などの必要なライブラリをインポートする
 import os
 import sys
+import traceback
+
 from flask import Flask, render_template, request, redirect, url_for
 #from werkzeug.utils import secure_filename
 from waitress import serve
+import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import google_scholar_search
@@ -36,36 +39,41 @@ def top():
     
     if request.method == 'POST':
 
-        query = request.form['query']
-        lr = request.form['lr']
-        as_ylo = request.form['as_ylo']
-        as_yhi = request.form['as_yhi']
-        scisbd = request.form['scisbd']
-        as_vis = request.form['as_vis']
-        as_sdt = request.form['as_sdt']
-        num = request.form['num']
+        try:
+            query = request.form['query']
+            lr = request.form['lr']
+            as_ylo = request.form['as_ylo']
+            as_yhi = request.form['as_yhi']
+            scisbd = request.form['scisbd']
+            as_vis = request.form['as_vis']
+            as_sdt = request.form['as_sdt']
+            num = request.form['num']
+            proxy = request.form['proxy']
 
-        print('query:{}, lr:{}, as_ylo:{}, as_yhi:{}, scisbd:{}, as_vis:{}, as_sdt:{}, num:{}'.format(query, lr, as_ylo, as_yhi, scisbd, as_vis, as_sdt, num))
-        
-        df_result, response_text = google_scholar_search.get_summary(query, 
-                                                      lr=lr, 
-                                                      as_ylo=as_ylo,
-                                                      as_yhi=as_yhi,
-                                                      scisbd=scisbd,
-                                                      as_vis=as_vis,
-                                                      as_sdt=as_sdt,
-                                                      num=int(num),
-                                                      usetor=True,
-                                                      )
-        df_result = df_result.sort_values('citations', ascending=False)
-        print(df_result.head())
-        if df_result.shape[0] > 0:
-            message = 'Search success'
-        else:
-            message = response_text
-        
-        print(query)
-        
+            print('query:{}, lr:{}, as_ylo:{}, as_yhi:{}, scisbd:{}, as_vis:{}, as_sdt:{}, num:{}'.format(query, lr, as_ylo, as_yhi, scisbd, as_vis, as_sdt, num))
+            
+            df_result, response_text = google_scholar_search.get_summary(query, 
+                                                        lr=lr, 
+                                                        as_ylo=as_ylo,
+                                                        as_yhi=as_yhi,
+                                                        scisbd=scisbd,
+                                                        as_vis=as_vis,
+                                                        as_sdt=as_sdt,
+                                                        num=int(num),
+                                                        usetor=True,
+                                                        proxy=proxy,
+                                                        )
+            df_result = df_result.sort_values('citations', ascending=False)
+            print(df_result.head())
+            print(query)
+            if df_result.shape[0] > 0:
+                message = 'Search success'
+            else:
+                message = response_text
+        except:
+            df_result = pd.DataFrame()
+            message = traceback.format_exc()
+
         return render_template('top.html', 
                                title=title,
                                query=query,
@@ -75,6 +83,7 @@ def top():
                                scisbd=scisbd,
                                as_vis=as_vis,
                                as_sdt=as_sdt,
+                               proxy=proxy,
                                num=num,
                                dfflag=True,
                                df_index=df_result.index.tolist(),

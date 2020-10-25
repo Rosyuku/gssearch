@@ -30,6 +30,7 @@ def get_summary(q,
                as_sdt=1,
                num=100,
                usetor=False,
+               proxy="",
                ):
     """
     q:Parameter defines the query you want to search.
@@ -76,25 +77,25 @@ def get_summary(q,
         _HEADERS['User-Agent'] = UserAgent(verify_ssl=False, use_cache_server=False,).random
         _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
         _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
-        
-        if usetor is True:
-            args = ['service', 'tor','restart']
+        _PROXIES = {
+                'http': proxy,
+                'https': proxy
+                }
+
+        if (usetor is True) & (proxy == "socks5://127.0.0.1:9050"):
+            args = ['killall', 'tor']
+            subprocess.call(args)            
+            args = ['service', 'tor','start']
             subprocess.call(args)
-            proxies = {
-                    'http':'socks5://127.0.0.1:9050',
-                    'https':'socks5://127.0.0.1:9050'
-                    }
-        else:
-            proxies = {}
         
         session = requests.session()
         url = url + '&start=' + str(start)
         response = session.get(url,
-                               headers=_HEADERS,
-                               cookies=_COOKIES,
-                               timeout=10,
-                               proxies=proxies,
-                               )
+                                headers=_HEADERS,
+                                cookies=_COOKIES,
+                                timeout=10,
+                                proxies=_PROXIES,
+                                )
         response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, "html.parser")
         
