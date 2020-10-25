@@ -19,6 +19,7 @@ from fake_useragent import UserAgent
 import random
 import hashlib
 import time
+import subprocess
 
 def get_summary(q, 
                lr="",
@@ -27,7 +28,8 @@ def get_summary(q,
                scisbd=0,
                as_vis=1,
                as_sdt=1,
-               num=100
+               num=100,
+               usetor=False,
                ):
     """
     q:Parameter defines the query you want to search.
@@ -75,12 +77,23 @@ def get_summary(q,
         _GOOGLEID = hashlib.md5(str(random.random()).encode('utf-8')).hexdigest()[:16]
         _COOKIES = {'GSP': 'ID={0}:CF=4'.format(_GOOGLEID)}
         
+        if usetor is True:
+            args = ['service', 'tor','restart']
+            subprocess.call(args)
+            proxies = {
+                    'http':'socks5://127.0.0.1:9050',
+                    'https':'socks5://127.0.0.1:9050'
+                    }
+        else:
+            proxies = {}
+        
         session = requests.session()
         url = url + '&start=' + str(start)
         response = session.get(url,
                                headers=_HEADERS,
                                cookies=_COOKIES,
                                timeout=10,
+                               proxies=proxies,
                                )
         response.encoding = response.apparent_encoding
         soup = BeautifulSoup(response.text, "html.parser")
@@ -120,5 +133,5 @@ if __name__ == "__main__":
     lr = "lang_en|lang_ja"
     as_ylo = 2018
     
-    df = get_summary(q, lr=lr, as_ylo=as_ylo)
+    df, text = get_summary(q, lr=lr, as_ylo=as_ylo)
     

@@ -55,6 +55,7 @@ def top():
                                                       as_vis=as_vis,
                                                       as_sdt=as_sdt,
                                                       num=int(num),
+                                                      usetor=True,
                                                       )
         df_result = df_result.sort_values('citations', ascending=False)
         print(df_result.head())

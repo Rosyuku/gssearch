@@ -2,6 +2,9 @@ FROM  python:3.7.9-slim-buster
 LABEL maintainer="Kazuyuki Wakasugi"
 LABEL version="0.1.0"
 
+# 必要なパッケージをインストール
+RUN apt-get update -y &&  apt-get install -y tor
+
 #リポジトリをclone
 COPY ./requirements.txt ./requirements.txt
 RUN pip install -r ./requirements.txt
